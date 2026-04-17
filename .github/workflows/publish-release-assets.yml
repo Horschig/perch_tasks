@@ -22,6 +22,7 @@ concurrency:
 jobs:
   prepare-release:
     name: Prepare Release
+    if: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message || '', 'cos - bump version to ') }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.release_meta.outputs.version }}
@@ -42,7 +43,31 @@ jobs:
 
       - name: Extract latest changelog section
         run: |
-          awk 'BEGIN{in_section=0} /^## / { if (in_section) exit; in_section=1 } in_section { print }' CHANGELOG.md > latest-release-notes.md
+          python3 - <<'PY'
+          from pathlib import Path
+
+          changelog_path = Path('CHANGELOG.md')
+          lines = changelog_path.read_text(encoding='utf-8').splitlines()
+          start = next((index for index, line in enumerate(lines) if line.startswith('## ')), None)
+
+          if start is None:
+            fallback = changelog_path.read_text(encoding='utf-8').strip()
+            if fallback.startswith('# Changelog'):
+              fallback = fallback[len('# Changelog'):].strip()
+
+            if not fallback:
+              raise SystemExit('No release notes found in CHANGELOG.md')
+
+            latest = fallback
+          else:
+            end = next(
+              (index for index in range(start + 1, len(lines)) if lines[index].startswith('## ')),
+              len(lines),
+            )
+            latest = '\n'.join(lines[start:end]).strip()
+
+          Path('latest-release-notes.md').write_text(f'{latest}\n', encoding='utf-8')
+          PY
           test -s latest-release-notes.md
 
       - name: Upload release notes artifact
