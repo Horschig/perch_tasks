@@ -14,8 +14,8 @@
     "icons:generate": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-icons.ps1",
     "release:apply-pr": "node ./scripts/bump-version-from-pr.mjs",
     "tauri": "tauri",
-    "app:dev": "powershell -ExecutionPolicy Bypass -File .\\scripts\\tauri-dev.ps1",
-    "app:build": "powershell -ExecutionPolicy Bypass -File .\\scripts\\tauri-build.ps1",
+    "app:dev": "node ./scripts/tauri-cli.mjs dev",
+    "app:build": "node ./scripts/tauri-cli.mjs build",
     "app:start": "powershell -ExecutionPolicy Bypass -File .\\scripts\\start-release.ps1"
   },
   "dependencies": {

@@ -82,3 +82,55 @@ jobs:
             !src-tauri/target/release/bundle/**/*.pdb
           if-no-files-found: error
           compression-level: 0
+
+  linux-desktop-build:
+    name: Linux Desktop Build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            xdg-utils
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@3c5f7ea28cd621ae0bf5283f0e981fb97b8a7af9
+        with:
+          toolchain: stable
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Linux bundles
+        run: npm run app:build -- --bundles appimage,deb
+
+      - name: Upload Linux bundle artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: perch-tasks-linux-bundle-${{ github.run_id }}
+          path: |
+            src-tauri/target/release/bundle/appimage/**
+            src-tauri/target/release/bundle/deb/**
+          if-no-files-found: error
+          compression-level: 0
