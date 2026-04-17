@@ -26,6 +26,7 @@ on:
         type: string
 
 permissions:
+  actions: write
   contents: write
   pull-requests: read
 
@@ -78,8 +79,17 @@ jobs:
           next_version=$(node -p "require('./package.json').version")
           git commit -m "cos - bump version to ${next_version}"
           echo "created=true" >> "$GITHUB_OUTPUT"
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Push release metadata commit
         if: ${{ steps.commit_release.outputs.created == 'true' }}
         run: |
           git push
+
+      - name: Trigger release asset publish
+        if: ${{ steps.commit_release.outputs.created == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ steps.commit_release.outputs.commit_sha }}
+        run: |
+          gh workflow run publish-release-assets.yml --ref main -f release_ref="$RELEASE_SHA"
