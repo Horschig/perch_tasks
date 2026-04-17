@@ -1,57 +1,79 @@
-# Perch Tasks
+<div align="center">
+  <h1>Perch Tasks</h1>
+  <p><strong>A compact desktop todo app with a transparent glass-like window, nested tasks, and a foldout tab that snaps to the screen edge.</strong></p>
+  <p>
+    <img alt="Desktop app" src="https://img.shields.io/badge/app-desktop-444?style=flat-square">
+    <img alt="Local storage" src="https://img.shields.io/badge/storage-local%20only-2E8B57?style=flat-square">
+    <img alt="Glass UI" src="https://img.shields.io/badge/look-glass%20transparency-5A7FFF?style=flat-square">
+    <img alt="Foldout edge tab" src="https://img.shields.io/badge/window-folds%20to%20edge-8B5CF6?style=flat-square">
+  </p>
+</div>
 
-Perch Tasks is a small desktop todo app built with Svelte, TypeScript, Vite, Tauri, and Rust.
+Perch Tasks is a small transparent desktop todo app for people who want their list nearby without giving half the screen to it. The window has a glass-style translucent surface, can stay pinned above your work, and can collapse into a slim tab that snaps to the side of the screen for quick fold and unfold.
 
-## Local Development
+## Highlights
 
-Install dependencies from the repository root:
+- Glass-style transparent window instead of a solid opaque panel.
+- Fold-to-edge mode that snaps to the side of the screen so the app can disappear and come back quickly.
+- Nested tasks and subtasks for turning one item into a small working tree.
+- Inline notes, labels, and custom properties for keeping things organized without much overhead.
+- Fast search with highlighted matches.
+- Drag-and-drop ordering for manual rearranging.
+- Tray behavior and always-on-top pinning so it stays available without taking over.
+- Local-only storage on your own machine.
 
-```powershell
-npm ci
-```
+## First few minutes
 
-Run the frontend checks locally:
+1. Launch Perch Tasks.
+2. Click the pen button to add your first task.
+3. Press `Enter` to save it right away.
+4. Add sub-tasks if the task needs a few steps underneath it.
+5. Press `Ctrl+F` or open search to jump to anything quickly.
+6. Pin the window if you want it hovering above your other apps.
+7. Fold it to the edge of the screen when you want it close but out of the way.
 
-```powershell
-npm run test
-npm run check
-npm run build
-```
+## A few things to know
 
-Run the combined frontend validation sequence:
+- Closing the window hides the app to the system tray instead of quitting it.
+- Double-clicking the tray icon shows or hides the app.
+- The tray menu lets you exit fully.
+- Search temporarily opens matching branches so buried tasks are easier to spot.
+- Your todos stay local. No account, cloud sync, or server setup is required.
 
-```powershell
-npm run ci:validate
-```
+## Downloads
 
-Run the desktop app in development:
+Windows and Linux builds are published in [GitHub Releases](https://github.com/Horschig/perch_tasks/releases).
 
-```powershell
-npm run app:dev
-```
+## Running from source
 
-Build the desktop bundle:
+If you are opening the repository itself, you can run or build the app with Node.js and Rust installed.
 
-```powershell
-npm run app:build
-```
+<details>
+  <summary>Show source-run steps</summary>
 
-## GitHub Actions
+  <br>
 
-- Every pull request runs frontend tests, Svelte checks, a frontend production build, and a Windows Tauri bundle build.
-- The Windows workflow uploads the generated bundle as a GitHub Actions artifact for inspection.
-- Every PR merged into main triggers a patch version bump and prepends the PR description to CHANGELOG.md.
+  1. Install Node.js 22 or newer.
+  2. Install Rust.
+  3. Install dependencies:
 
-## Changelog and Versioning
+  ```text
+  npm ci
+  ```
 
-- The patch version is kept in sync across package.json, package-lock.json, src-tauri/Cargo.toml, and src-tauri/tauri.conf.json.
-- CHANGELOG.md entries are generated directly from the merged PR description.
-- Keep PR descriptions ready to be copied into release notes without further editing.
+  4. Start the desktop app in development mode:
 
-## Useful Script
+  ```text
+  npm run app:dev
+  ```
 
-Dry-run the release metadata automation locally:
+  5. Create a local build:
 
-```powershell
-node .\scripts\bump-version-from-pr.mjs --dry-run
-```
+  ```text
+  npm run app:build
+  ```
+</details>
+
+## Release notes
+
+See [CHANGELOG.md](./CHANGELOG.md) for recent changes.
