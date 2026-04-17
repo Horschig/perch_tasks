@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.3 - 2026-04-17
+
+PR: #3 - Fix automatic release dispatch after metadata bump
+
+## Summary
+- stop relying on a push-triggered publish workflow for the version bump commit
+- dispatch the publish workflow explicitly from the metadata workflow after the bump commit is pushed
+- pass the exact release commit SHA into the publish workflow so builds, tagging, and notes come from the correct revision
+
+## Root Cause
+The version bump commit is pushed by the `Release Metadata After Merge` workflow using `GITHUB_TOKEN`. GitHub does not trigger a second workflow run from that push, so `Publish Release Assets` never starts for the bump commit.
+
+## Fix
+- switch `Publish Release Assets` to `workflow_dispatch`
+- trigger it from `Release Metadata After Merge` with the exact bump commit SHA
+- build, tag, and publish from that SHA instead of the ambient workflow event SHA
+
 ## 0.2.2 - 2026-04-17
 
 PR: #2 - Fix release workflow sequencing after merge
