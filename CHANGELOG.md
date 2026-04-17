@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 - 2026-04-17
+
+PR: #2 - Fix release workflow sequencing after merge
+
+This fixes release workflow sequencing after merge. Previously, publish-release-assets could race the merged PR push instead of waiting for the auto-generated version bump commit. This change gates publishing on the bump commit and hardens changelog note extraction.
+
 ## 0.2.1 - 2026-04-17
 
 PR: #1 - Enhance Linux build and automate release publishing
