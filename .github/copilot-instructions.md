@@ -20,11 +20,13 @@
 - src-tauri/Cargo.toml: Rust package metadata and native dependency declarations.
 - src-tauri/tauri.conf.json: Tauri app metadata, bundle configuration, and version source.
 - src-tauri/src/: Rust entry points and native integration code.
-- scripts/tauri-dev.ps1: local Tauri development launcher.
-- scripts/tauri-build.ps1: local Tauri release build launcher.
+- scripts/tauri-cli.mjs: cross-platform Tauri development and build launcher used by npm scripts.
+- scripts/tauri-dev.ps1: legacy Windows PowerShell launcher kept for local fallback.
+- scripts/tauri-build.ps1: legacy Windows PowerShell build launcher kept for local fallback.
 - scripts/bump-version-from-pr.mjs: post-merge automation that increments the patch version and writes the changelog entry.
-- .github/workflows/pr-validation.yml: PR validation workflow.
+- .github/workflows/pr-validation.yml: PR validation workflow, including Windows and Linux desktop bundle builds.
 - .github/workflows/release-after-merge.yml: merged-PR release metadata workflow.
+- .github/workflows/publish-release-assets.yml: tag-and-publish workflow for Windows and Linux release assets.
 - CHANGELOG.md: prepend-only changelog fed from PR descriptions.
 - README.md: developer setup, local commands, and workflow summary.
 
@@ -45,6 +47,7 @@
 - Keep the version synchronized across package.json, package-lock.json, src-tauri/Cargo.toml, and src-tauri/tauri.conf.json.
 - Merged PRs into main trigger an automatic patch bump only. Do not manually edit versions for routine changes.
 - CHANGELOG.md entries are copied from the PR description. Keep PR descriptions release-note ready and user-facing.
+- The version-bump commit on `main` also triggers publishing of Windows and Linux assets to GitHub Releases.
 - The merged-PR workflow runs with write permissions on the base branch only. Do not change it to check out or execute untrusted PR head code.
 
 # Engineering Expectations

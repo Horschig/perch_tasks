@@ -42,11 +42,11 @@ Perch Tasks is a small transparent desktop todo app for people who want their li
 
 ## Downloads
 
-Packaged builds and setup installers are published in [GitHub Releases](https://github.com/Horschig/perch_tasks/releases). If you just want to use Perch Tasks, that is the place to start.
+Windows and Linux builds are published in [GitHub Releases](https://github.com/Horschig/perch_tasks/releases).
 
 ## Running from source
 
-If you are opening the repository itself, the included helper scripts are currently aimed at the existing PowerShell-based development setup.
+If you are opening the repository itself, you can run or build the app with Node.js and Rust installed.
 
 <details>
   <summary>Show source-run steps</summary>
@@ -57,19 +57,19 @@ If you are opening the repository itself, the included helper scripts are curren
   2. Install Rust.
   3. Install dependencies:
 
-  ```powershell
+  ```text
   npm ci
   ```
 
   4. Start the desktop app in development mode:
 
-  ```powershell
+  ```text
   npm run app:dev
   ```
 
   5. Create a local build:
 
-  ```powershell
+  ```text
   npm run app:build
   ```
 </details>
