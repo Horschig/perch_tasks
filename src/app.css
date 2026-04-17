@@ -1,0 +1,197 @@
+/* ==========================================
+   Liquid Glass Design Tokens & Base Styles
+   ========================================== */
+
+:root {
+  /* Typography */
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+
+  /* Colors — Light mode */
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #4a4a6a;
+  --color-text-tertiary: #8888a0;
+  --color-bg-solid: rgba(255, 255, 255, 0.84);
+  --color-bg-hover: rgba(0, 0, 0, 0.05);
+  --color-bg-active: rgba(0, 0, 0, 0.09);
+  --color-border: rgba(0, 0, 0, 0.10);
+  --color-separator: rgba(0, 0, 0, 0.06);
+  --color-surface: rgba(255, 255, 255, 0.92);
+  --color-surface-elevated: rgba(255, 255, 255, 0.97);
+  --color-card-solid: rgba(255, 255, 255, 0.94);
+  --color-panel-solid: rgba(255, 255, 255, 0.97);
+
+  /* Glass */
+  --glass-blur: 20px;
+  --glass-bg: rgba(255, 255, 255, 0.96);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-highlight: rgba(255, 255, 255, 0.92);
+  --glass-sheen: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    rgba(255, 255, 255, 0.0) 40%,
+    rgba(255, 255, 255, 0.06) 65%,
+    rgba(255, 255, 255, 0.0) 100%
+  );
+  --glass-inner-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.04),
+    0 0 0 0.5px rgba(255, 255, 255, 0.20);
+
+  /* Radii — concentric harmony */
+  --radius-window: 12px;
+  --radius-card: 10px;
+  --radius-control: 8px;
+  --radius-badge: 12px;
+  --radius-dot: 50%;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+
+  /* Titlebar */
+  --titlebar-height: 36px;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary: #e8e8f0;
+    --color-text-secondary: #a0a0b8;
+    --color-text-tertiary: #6a6a80;
+    --color-bg-solid: rgba(24, 24, 36, 0.86);
+    --color-bg-hover: rgba(255, 255, 255, 0.07);
+    --color-bg-active: rgba(255, 255, 255, 0.12);
+    --color-border: rgba(255, 255, 255, 0.10);
+    --color-separator: rgba(255, 255, 255, 0.06);
+    --color-surface: rgba(24, 24, 34, 0.92);
+    --color-surface-elevated: rgba(30, 30, 42, 0.97);
+    --color-card-solid: rgba(26, 26, 38, 0.94);
+    --color-panel-solid: rgba(30, 30, 42, 0.97);
+    --glass-bg: rgba(26, 26, 38, 0.96);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-highlight: rgba(255, 255, 255, 0.20);
+    --glass-sheen: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.0) 40%,
+      rgba(255, 255, 255, 0.03) 65%,
+      rgba(255, 255, 255, 0.0) 100%
+    );
+    --glass-inner-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 0 rgba(0, 0, 0, 0.15),
+      0 0 0 0.5px rgba(255, 255, 255, 0.08);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Base reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100vh;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  user-select: none;
+}
+
+#app {
+  position: relative;
+  height: 100vh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-solid);
+  border-radius: var(--radius-window);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inner-shadow);
+  backdrop-filter: blur(calc(var(--glass-blur) * 1.15));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.15));
+  overflow: hidden;
+}
+
+/* Specular glass sheen — simulates light refracting through glass */
+#app::after {
+  content: none;
+  position: absolute;
+  inset: 0;
+  background: var(--glass-sheen);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Utility: editable text */
+[contenteditable] {
+  outline: none;
+  user-select: text;
+  cursor: text;
+}
+
+/* Button reset */
+button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-text-secondary);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+/* Input reset */
+input {
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  outline: none;
+  width: 100%;
+}

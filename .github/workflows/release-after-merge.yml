@@ -1,0 +1,85 @@
+name: Release Metadata After Merge
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: false
+        type: string
+      pr_title:
+        description: Pull request title
+        required: false
+        type: string
+      pr_body:
+        description: Pull request description to copy into the changelog
+        required: false
+        type: string
+      merged_at:
+        description: Merge timestamp in ISO-8601 format
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: release-metadata-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  update-release-metadata:
+    name: Update Release Metadata
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out base branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.pull_request.base.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Apply changelog and version bump
+        env:
+          PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_title || github.event.pull_request.title }}
+          PR_BODY: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_body || github.event.pull_request.body }}
+          MERGED_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.merged_at || github.event.pull_request.merged_at }}
+        run: npm run release:apply-pr
+
+      - name: Commit release metadata
+        id: commit_release
+        run: |
+          if git diff --quiet; then
+            echo "No release metadata changes to commit."
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add CHANGELOG.md package.json package-lock.json src-tauri/Cargo.toml src-tauri/tauri.conf.json
+
+          next_version=$(node -p "require('./package.json').version")
+          git commit -m "cos - bump version to ${next_version}"
+          echo "created=true" >> "$GITHUB_OUTPUT"
+
+      - name: Push release metadata commit
+        if: ${{ steps.commit_release.outputs.created == 'true' }}
+        run: |
+          git push

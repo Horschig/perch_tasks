@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="paperFront" x1="158" y1="116" x2="331" y2="390" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFDF9"/>
+      <stop offset="0.55" stop-color="#F8F0E4"/>
+      <stop offset="1" stop-color="#F0DDC6"/>
+    </linearGradient>
+    <linearGradient id="paperBack" x1="252" y1="165" x2="392" y2="367" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD885"/>
+      <stop offset="0.45" stop-color="#F3B84F"/>
+      <stop offset="1" stop-color="#CC7F15"/>
+    </linearGradient>
+    <linearGradient id="paperEdge" x1="140" y1="113" x2="350" y2="387" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFF9EE"/>
+      <stop offset="1" stop-color="#DFC5A7"/>
+    </linearGradient>
+    <linearGradient id="lineGold" x1="175" y1="205" x2="300" y2="283" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D89A1B"/>
+      <stop offset="1" stop-color="#B57A10"/>
+    </linearGradient>
+    <linearGradient id="clipMetal" x1="280" y1="82" x2="333" y2="170" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5E6674"/>
+      <stop offset="0.45" stop-color="#D5D9E2"/>
+      <stop offset="1" stop-color="#70798A"/>
+    </linearGradient>
+    <radialGradient id="warmGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(318 336) rotate(90) scale(116 126)">
+      <stop offset="0" stop-color="#F5C15D" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#F5C15D" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softShadow" x="74" y="86" width="350" height="370" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="14"/>
+      <feGaussianBlur stdDeviation="16"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.388235 0 0 0 0 0.278431 0 0 0 0 0.14902 0 0 0 0.18 0"/>
+      <feBlend in2="SourceGraphic" result="shape"/>
+    </filter>
+    <filter id="noteShadow" x="96" y="72" width="294" height="356" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="10"/>
+      <feGaussianBlur stdDeviation="10"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.290196 0 0 0 0 0.196078 0 0 0 0 0.0941176 0 0 0 0.18 0"/>
+      <feBlend in2="SourceGraphic" result="shape"/>
+    </filter>
+    <filter id="clipShadow" x="244" y="70" width="110" height="148" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feOffset dy="6"/>
+      <feGaussianBlur stdDeviation="4"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.14902 0 0 0 0 0.176471 0 0 0 0 0.227451 0 0 0 0.18 0"/>
+      <feBlend in2="SourceGraphic" result="shape"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="314" cy="337" rx="108" ry="112" fill="url(#warmGlow)"/>
+
+  <g filter="url(#softShadow)" transform="rotate(3 319 288)">
+    <rect x="232" y="158" width="178" height="228" rx="34" fill="url(#paperBack)"/>
+    <rect x="232" y="158" width="178" height="228" rx="34" stroke="#D58A1F" stroke-opacity="0.42" stroke-width="4"/>
+    <path d="M251 185C251 175.611 258.611 168 268 168H379C388.389 168 396 175.611 396 185V198H251V185Z" fill="#FFF4D6" fill-opacity="0.26"/>
+  </g>
+
+  <g filter="url(#noteShadow)" transform="rotate(-7 244 246)">
+    <rect x="124" y="110" width="226" height="278" rx="38" fill="url(#paperFront)"/>
+    <rect x="124" y="110" width="226" height="278" rx="38" stroke="url(#paperEdge)" stroke-width="6"/>
+    <path d="M287 388L350 325V350C350 371 333 388 312 388H287Z" fill="#E2C19D" fill-opacity="0.95"/>
+    <path d="M297 382L350 329V351C350 368 336 382 319 382H297Z" fill="#FFF7EB" fill-opacity="0.72"/>
+    <path d="M147 136C147 126.611 154.611 119 164 119H322C331.389 119 339 126.611 339 136V149H147V136Z" fill="#FFFFFF" fill-opacity="0.38"/>
+
+    <rect x="173" y="194" width="132" height="11" rx="5.5" fill="url(#lineGold)"/>
+    <rect x="168" y="227" width="142" height="11" rx="5.5" fill="url(#lineGold)" fill-opacity="0.94"/>
+    <rect x="164" y="260" width="136" height="11" rx="5.5" fill="url(#lineGold)" fill-opacity="0.9"/>
+    <rect x="174" y="293" width="115" height="11" rx="5.5" fill="url(#lineGold)" fill-opacity="0.86"/>
+  </g>
+
+  <g filter="url(#clipShadow)" transform="rotate(-7 244 246)">
+    <path d="M287 83C307.987 83 325 100.013 325 121V161C325 177.016 312.016 190 296 190C280.536 190 268 177.464 268 162V142C268 130.402 277.402 121 289 121C300.598 121 310 130.402 310 142V169" stroke="url(#clipMetal)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
