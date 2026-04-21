@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import {
     actionSetItemOrderMode,
     getLabels,
@@ -6,10 +7,13 @@
     getProperties,
     actionSetLabels,
     actionSetProperties,
+    actionSetStartupWindowMode,
+    getStartupWindowMode,
   } from '../lib/state.svelte';
-  import { ITEM_ORDER_MODES } from '../lib/constants';
+  import { ITEM_ORDER_MODES, STARTUP_WINDOW_MODES } from '../lib/constants';
+  import { getAutostartEnabled, setAutostartEnabled } from '../lib/autostart';
   import { generateId } from '../lib/uuid';
-  import type { ItemOrderMode, Label, Property } from '../lib/types';
+  import type { ItemOrderMode, Label, Property, StartupWindowMode } from '../lib/types';
 
   interface Props {
     onClose: () => void;
@@ -18,12 +22,55 @@
   let { onClose }: Props = $props();
 
   let itemOrderMode = $state<ItemOrderMode>(getItemOrderMode());
+  let startupWindowMode = $state<StartupWindowMode>(getStartupWindowMode());
   let labels = $state<Label[]>(getLabels());
   let properties = $state<Property[]>(getProperties());
+  let autostartEnabled = $state(false);
+  let autostartPending = $state(true);
+  let autostartError = $state('');
+
+  onMount(() => {
+    void refreshAutostart();
+  });
 
   function updateItemOrderMode(value: ItemOrderMode) {
     actionSetItemOrderMode(value);
     itemOrderMode = getItemOrderMode();
+  }
+
+  function updateStartupWindowMode(value: StartupWindowMode) {
+    actionSetStartupWindowMode(value);
+    startupWindowMode = getStartupWindowMode();
+  }
+
+  async function refreshAutostart() {
+    autostartPending = true;
+    autostartError = '';
+
+    try {
+      autostartEnabled = await getAutostartEnabled();
+    } catch {
+      autostartError = 'Autostart status could not be loaded.';
+    } finally {
+      autostartPending = false;
+    }
+  }
+
+  async function handleAutostartChange(event: Event) {
+    const nextEnabled = (event.target as HTMLInputElement).checked;
+
+    autostartPending = true;
+    autostartError = '';
+
+    try {
+      await setAutostartEnabled(nextEnabled);
+      autostartEnabled = await getAutostartEnabled();
+    } catch {
+      autostartEnabled = !nextEnabled;
+      autostartError = 'Autostart could not be updated.';
+    } finally {
+      autostartPending = false;
+    }
   }
 
   // -- Label management --
@@ -99,6 +146,47 @@
     </div>
 
     <div class="settings-body">
+      <section class="section">
+        <h3>Window</h3>
+        <p class="section-hint">Choose how the app starts and whether it launches with your desktop session.</p>
+
+        <label class="field-label" for="startup-window-mode">Startup window</label>
+        <select
+          id="startup-window-mode"
+          class="order-mode-select"
+          bind:value={startupWindowMode}
+          onchange={(event) => updateStartupWindowMode((event.target as HTMLSelectElement).value as StartupWindowMode)}
+        >
+          {#each STARTUP_WINDOW_MODES as mode}
+            <option value={mode.value}>{mode.label}</option>
+          {/each}
+        </select>
+
+        <label class="toggle-row" for="launch-at-login">
+          <span class="toggle-copy">
+            <span class="toggle-title">Launch at login</span>
+            <span class="section-note">Registers Perch Tasks to start with Windows or Linux.</span>
+          </span>
+          <input
+            id="launch-at-login"
+            class="toggle-input"
+            type="checkbox"
+            checked={autostartEnabled}
+            disabled={autostartPending}
+            onchange={handleAutostartChange}
+            aria-label="Launch at login"
+          />
+        </label>
+
+        {#if autostartPending}
+          <p class="section-note">Checking launch-at-login status...</p>
+        {/if}
+
+        {#if autostartError}
+          <p class="field-error">{autostartError}</p>
+        {/if}
+      </section>
+
       <section class="section">
         <h3>Item order</h3>
         <p class="section-hint">Apply a one-time automatic order, then keep drag-and-drop available for manual fine-tuning.</p>
@@ -303,6 +391,39 @@
     margin-top: var(--space-sm);
     font-size: 11px;
     color: var(--color-text-tertiary);
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+  }
+
+  .toggle-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .toggle-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text-secondary);
+  }
+
+  .toggle-input {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .field-error {
+    margin-top: var(--space-xs);
+    font-size: 11px;
+    color: #b91c1c;
   }
 
   .item-list {

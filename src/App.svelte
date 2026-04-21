@@ -28,6 +28,7 @@
     actionSetAlwaysOnTop,
     actionSetSearch,
     getSearchQuery,
+    getStartupWindowMode,
   } from './lib/state.svelte';
 
   type ResizeDirection = 'East' | 'North' | 'NorthEast' | 'NorthWest' | 'South' | 'SouthEast' | 'SouthWest' | 'West';
@@ -71,8 +72,19 @@
     });
 
     const appWindow = getCurrentWindow();
-    await appWindow.setMinSize(new PhysicalSize(DEFAULT_MIN_WINDOW_SIZE.width, DEFAULT_MIN_WINDOW_SIZE.height));
     await appWindow.setAlwaysOnTop(getState().settings.alwaysOnTop);
+
+    if (getStartupWindowMode() === 'folded') {
+      const currentRect = await readWindowRect();
+      const didFold = await applyFoldedWindowState(currentRect);
+
+      if (!didFold) {
+        await appWindow.setMinSize(new PhysicalSize(DEFAULT_MIN_WINDOW_SIZE.width, DEFAULT_MIN_WINDOW_SIZE.height));
+      }
+    } else {
+      await appWindow.setMinSize(new PhysicalSize(DEFAULT_MIN_WINDOW_SIZE.width, DEFAULT_MIN_WINDOW_SIZE.height));
+    }
+
     await appWindow.show();
     await appWindow.unminimize();
     await appWindow.setFocus();
@@ -252,18 +264,11 @@
     await handleFoldWindow();
   }
 
-  async function handleFoldWindow() {
-    clearInlineUi();
-    contextMenu = null;
-    showSettings = false;
-    closeSearch({ restoreAdd: false });
-    closeRootAddComposer();
-
+  async function applyFoldedWindowState(currentRect: Rect): Promise<boolean> {
     const appWindow = getCurrentWindow();
-    const currentRect = await readWindowRect();
     const monitor = await getMonitorForRect(currentRect);
 
-    if (!monitor) return;
+    if (!monitor) return false;
 
     const snapped = {
       edge: 'right' as const,
@@ -278,6 +283,18 @@
     foldedEdge = snapped.edge;
     foldedBounds = snapped.rect;
     isFolded = true;
+    return true;
+  }
+
+  async function handleFoldWindow() {
+    clearInlineUi();
+    contextMenu = null;
+    showSettings = false;
+    closeSearch({ restoreAdd: false });
+    closeRootAddComposer();
+
+    const currentRect = await readWindowRect();
+    await applyFoldedWindowState(currentRect);
   }
 
   async function handleUnfoldWindow() {
