@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.2.5 - 2026-04-22
+
+PR: #5 - enh: add startup controls and fix regressions
+
+## Summary
+- restore the search composer width and add a Playwright browser regression for it
+- add startup preferences for launch-at-login and folded vs unfolded startup, with strict persistence parsing
+- enforce single-instance behavior and reveal the existing window on second launch
+- fix the nested drag-handle regression where expanding a child list disabled sibling reordering
+
+## Validation
+- npm test
+- npm run test:browser -- browser-tests/toolbar-width.spec.ts
+- npm run check
+- npm run build
+- npm run app:build
+
 ## 0.2.4 - 2026-04-22
 
 PR: #4 - fix: restore regressions and add startup controls
