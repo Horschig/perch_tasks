@@ -25,10 +25,12 @@ export interface Property {
 }
 
 export type ItemOrderMode = 'manual' | 'urgent-first' | 'important-first' | 'urgent-then-important';
+export type StartupWindowMode = 'folded' | 'unfolded';
 
 export interface AppSettings {
   alwaysOnTop: boolean;
   itemOrderMode: ItemOrderMode;
+  startupWindowMode: StartupWindowMode;
   windowPosition: { x: number; y: number; width: number; height: number } | null;
   theme: 'auto' | 'light' | 'dark';
 }

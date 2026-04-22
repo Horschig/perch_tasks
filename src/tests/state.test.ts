@@ -96,4 +96,20 @@ describe('state ordering', () => {
 
     expect(stateModule.getItems().map((item) => item.id)).toEqual(['normal', 'urgent']);
   });
+
+  it('persists the startup window mode setting', async () => {
+    vi.useFakeTimers();
+
+    const initialState: AppState = createDefaultState();
+    const { stateModule, store } = await loadStateModule(initialState);
+
+    stateModule.actionSetStartupWindowMode('folded');
+
+    expect(stateModule.getState().settings.startupWindowMode).toBe('folded');
+
+    vi.runAllTimers();
+    await Promise.resolve();
+
+    expect((store.getSavedState() as AppState | null)?.settings.startupWindowMode).toBe('folded');
+  });
 });
