@@ -477,6 +477,30 @@ describe('TodoItem interactions', () => {
 
     expect(treeProps.onReorderItems).toHaveBeenCalledWith(null, ['second', 'first']);
   });
+
+  it('keeps sibling drag handles enabled after an expanded child list mounts', () => {
+    render(TodoTree, {
+      items: [
+        makeItem({
+          id: 'parent',
+          text: 'Parent item',
+          collapsed: false,
+          children: [makeItem({ id: 'child', text: 'Only child' })],
+        }),
+        makeItem({ id: 'sibling', text: 'Sibling item' }),
+      ],
+      labels: [],
+      properties: [],
+      depth: 0,
+      searchQuery: '',
+      ...makeTreeProps(),
+      canReorder: true,
+    });
+
+    const siblingDragHandle = screen.getByRole('button', { name: 'Drag item Sibling item' });
+
+    expect(siblingDragHandle.tabIndex).toBe(0);
+  });
 });
 
 describe('ContextMenu actions', () => {

@@ -1,25 +1,45 @@
 <script lang="ts">
   import {
+    actionSetStartupMode,
     actionSetItemOrderMode,
     getLabels,
     getItemOrderMode,
     getProperties,
+    getStartupMode,
     actionSetLabels,
     actionSetProperties,
   } from '../lib/state.svelte';
-  import { ITEM_ORDER_MODES } from '../lib/constants';
+  import { ITEM_ORDER_MODES, STARTUP_MODES } from '../lib/constants';
   import { generateId } from '../lib/uuid';
-  import type { ItemOrderMode, Label, Property } from '../lib/types';
+  import type { ItemOrderMode, Label, Property, StartupMode } from '../lib/types';
 
   interface Props {
     onClose: () => void;
+    autostartEnabled?: boolean;
+    autostartPending?: boolean;
+    onSetAutostartEnabled?: (value: boolean) => void | Promise<void>;
   }
 
-  let { onClose }: Props = $props();
+  let {
+    onClose,
+    autostartEnabled = false,
+    autostartPending = false,
+    onSetAutostartEnabled = () => undefined,
+  }: Props = $props();
 
   let itemOrderMode = $state<ItemOrderMode>(getItemOrderMode());
+  let startupMode = $state<StartupMode>(getStartupMode());
   let labels = $state<Label[]>(getLabels());
   let properties = $state<Property[]>(getProperties());
+
+  function updateStartupMode(value: StartupMode) {
+    actionSetStartupMode(value);
+    startupMode = getStartupMode();
+  }
+
+  function handleAutostartChange(event: Event) {
+    void onSetAutostartEnabled((event.target as HTMLInputElement).checked);
+  }
 
   function updateItemOrderMode(value: ItemOrderMode) {
     actionSetItemOrderMode(value);
@@ -99,6 +119,42 @@
     </div>
 
     <div class="settings-body">
+      <section class="section">
+        <h3>Launch</h3>
+        <p class="section-hint">Choose how the app should look when it opens.</p>
+
+        <label class="toggle-row" for="autostart-enabled">
+          <span class="toggle-copy">
+            <span class="field-label field-label-inline">Launch at login</span>
+            <span class="section-note section-note-inline">Start Perch Tasks automatically when you sign in on Windows or Linux.</span>
+          </span>
+          <input
+            id="autostart-enabled"
+            class="toggle-input"
+            type="checkbox"
+            checked={autostartEnabled}
+            disabled={autostartPending}
+            aria-label="Launch at login"
+            onchange={handleAutostartChange}
+          />
+        </label>
+
+        <label class="field-label" for="startup-mode">Startup mode</label>
+        <select
+          id="startup-mode"
+          class="order-mode-select"
+          bind:value={startupMode}
+          aria-label="Startup mode"
+          onchange={(event) => updateStartupMode((event.target as HTMLSelectElement).value as StartupMode)}
+        >
+          {#each STARTUP_MODES as mode}
+            <option value={mode.value}>{mode.label}</option>
+          {/each}
+        </select>
+
+        <p class="section-note">Folded starts as the edge tab. Unfolded opens the full window.</p>
+      </section>
+
       <section class="section">
         <h3>Item order</h3>
         <p class="section-hint">Apply a one-time automatic order, then keep drag-and-drop available for manual fine-tuning.</p>
@@ -289,6 +345,34 @@
     margin-bottom: var(--space-xs);
   }
 
+  .field-label-inline {
+    margin-bottom: 0;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-elevated);
+  }
+
+  .toggle-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .toggle-input {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
   .order-mode-select {
     width: 100%;
     border: 1px solid var(--color-border);
@@ -303,6 +387,10 @@
     margin-top: var(--space-sm);
     font-size: 11px;
     color: var(--color-text-tertiary);
+  }
+
+  .section-note-inline {
+    margin-top: 0;
   }
 
   .item-list {

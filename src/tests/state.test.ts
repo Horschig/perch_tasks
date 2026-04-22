@@ -96,4 +96,19 @@ describe('state ordering', () => {
 
     expect(stateModule.getItems().map((item) => item.id)).toEqual(['normal', 'urgent']);
   });
+
+  it('updates startup settings and persists them through the debounced save path', async () => {
+    vi.useFakeTimers();
+
+    const { stateModule, store } = await loadStateModule(createDefaultState());
+
+    stateModule.actionSetStartupMode('folded');
+    stateModule.actionSetAutostartEnabled(true);
+    vi.runOnlyPendingTimers();
+
+    expect(stateModule.getState().settings.startupMode).toBe('folded');
+    expect(stateModule.getState().settings.autostartEnabled).toBe(true);
+    expect((store.getSavedState() as AppState | null)?.settings.startupMode).toBe('folded');
+    expect((store.getSavedState() as AppState | null)?.settings.autostartEnabled).toBe(true);
+  });
 });

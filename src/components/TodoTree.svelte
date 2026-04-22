@@ -133,23 +133,35 @@
     const handleConsiderEvent = (event: Event) => handleReorderConsider(event as CustomEvent<{ items: unknown[]; info: unknown }>);
     const handleFinalizeEvent = (event: Event) => handleReorderFinalize(event as CustomEvent<{ items: unknown[]; info: unknown }>);
 
+    function attachZone(nextOptions: ReturnType<typeof getZoneOptions>) {
+      if (nextOptions.dragDisabled) {
+        action?.destroy?.();
+        action = undefined;
+        return;
+      }
+
+      try {
+        action = dragHandleZone(node, nextOptions);
+      } catch {
+        action = undefined;
+      }
+    }
+
     node.addEventListener('consider', handleConsiderEvent);
     node.addEventListener('finalize', handleFinalizeEvent);
 
-    try {
-      action = dragHandleZone(node, options);
-    } catch {
-      action = undefined;
-    }
+    attachZone(options);
 
     return {
       update(nextOptions: ReturnType<typeof getZoneOptions>) {
         if (!action) {
-          try {
-            action = dragHandleZone(node, nextOptions);
-          } catch {
-            action = undefined;
-          }
+          attachZone(nextOptions);
+          return;
+        }
+
+        if (nextOptions.dragDisabled) {
+          action.destroy?.();
+          action = undefined;
           return;
         }
 

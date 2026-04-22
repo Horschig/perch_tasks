@@ -242,6 +242,11 @@
     min-height: 28px;
   }
 
+  .search-composer {
+    min-width: clamp(220px, 42vw, 360px);
+    max-width: clamp(220px, 42vw, 360px);
+  }
+
   .mode-input {
     flex: 1;
     min-width: 0;

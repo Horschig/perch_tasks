@@ -57,6 +57,25 @@ describe('loadState', () => {
     expect(state.settings.alwaysOnTop).toBe(false);
     expect(state.settings.theme).toBe('dark');
     expect(state.settings.itemOrderMode).toBe('manual');
+    expect(state.settings.autostartEnabled).toBe(false);
+    expect(state.settings.startupMode).toBe('unfolded');
+  });
+
+  it('falls back to safe startup defaults when persisted startup settings are invalid', async () => {
+    const saved = {
+      ...createDefaultState(),
+      settings: {
+        ...createDefaultState().settings,
+        autostartEnabled: 'yes please',
+        startupMode: 'sideways',
+      },
+    };
+    const store = createMockStore({ appState: saved });
+
+    const state = await loadState(store);
+
+    expect(state.settings.autostartEnabled).toBe(false);
+    expect(state.settings.startupMode).toBe('unfolded');
   });
 
   it('adds default note metadata when loading items saved before note visibility existed', async () => {

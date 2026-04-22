@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
+    "test:browser": "playwright test",
     "test:watch": "vitest",
     "icons:generate": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-icons.ps1",
     "release:apply-pr": "node ./scripts/bump-version-from-pr.mjs",
@@ -20,10 +21,12 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-autostart": "^2.5.1",
     "@tauri-apps/plugin-store": "^2",
     "@tauri-apps/plugin-window-state": "^2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tauri-apps/cli": "^2",
     "@testing-library/svelte": "^5",

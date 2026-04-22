@@ -1,6 +1,6 @@
-import type { Label, Property, AppState, AppSettings, ItemOrderMode } from './types';
+import type { Label, Property, AppState, AppSettings, ItemOrderMode, StartupMode } from './types';
 
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 
 export const DEFAULT_PROPERTY_IDS = {
   important: 'prop-important',
@@ -12,6 +12,11 @@ export const ITEM_ORDER_MODES: Array<{ value: ItemOrderMode; label: string }> = 
   { value: 'urgent-first', label: 'Urgent first' },
   { value: 'important-first', label: 'Important first' },
   { value: 'urgent-then-important', label: 'Urgent, then important' },
+];
+
+export const STARTUP_MODES: Array<{ value: StartupMode; label: string }> = [
+  { value: 'unfolded', label: 'Unfolded' },
+  { value: 'folded', label: 'Folded to edge' },
 ];
 
 export const DEFAULT_LABELS: Label[] = [
@@ -28,7 +33,9 @@ export const DEFAULT_PROPERTIES: Property[] = [
 
 export const DEFAULT_SETTINGS: AppSettings = {
   alwaysOnTop: true,
+  autostartEnabled: false,
   itemOrderMode: 'manual',
+  startupMode: 'unfolded',
   windowPosition: null,
   theme: 'auto',
 };

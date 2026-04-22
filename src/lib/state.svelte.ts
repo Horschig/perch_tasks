@@ -1,4 +1,4 @@
-import type { AppState, TodoItem, Label, Property, ItemOrderMode } from './types';
+import type { AppState, TodoItem, Label, Property, ItemOrderMode, StartupMode } from './types';
 import { createDefaultState } from './constants';
 import { addItem, addChild, removeItem, toggleCollapse, toggleItemNoteCollapsed, updateItemNote, updateItemText, moveItem, reorderSiblings, sortItems } from './tree';
 import { cycleLabel } from './labels';
@@ -66,6 +66,14 @@ export function getFilteredItems(): TodoItem[] {
 
 export function getItemOrderMode(): ItemOrderMode {
   return appState.settings.itemOrderMode;
+}
+
+export function getAutostartEnabled(): boolean {
+  return appState.settings.autostartEnabled;
+}
+
+export function getStartupMode(): StartupMode {
+  return appState.settings.startupMode;
 }
 
 export function isInitialized(): boolean {
@@ -171,6 +179,16 @@ export function actionSetItemOrderMode(value: ItemOrderMode): void {
         settings: { ...appState.settings, itemOrderMode: 'manual' },
       }
     : applyAutomaticOrderMode(appState, value);
+  scheduleSave();
+}
+
+export function actionSetAutostartEnabled(value: boolean): void {
+  appState.settings = { ...appState.settings, autostartEnabled: value };
+  scheduleSave();
+}
+
+export function actionSetStartupMode(value: StartupMode): void {
+  appState.settings = { ...appState.settings, startupMode: value };
   scheduleSave();
 }
 

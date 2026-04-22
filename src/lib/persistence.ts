@@ -44,6 +44,13 @@ function migrateState(data: Record<string, unknown>): AppState {
     };
   }
 
+  if (version < 5) {
+    state = {
+      ...state,
+      settings: sanitizeSettings(defaults.settings, state.settings),
+    };
+  }
+
   return { ...state, schemaVersion: SCHEMA_VERSION };
 }
 
@@ -65,22 +72,52 @@ export async function saveState(store: StoreAdapter, state: AppState): Promise<v
 }
 
 function mergeState(defaults: AppState, data: Record<string, unknown>): AppState {
-  const settings = isRecord(data.settings) ? data.settings : {};
-
   return {
     schemaVersion: SCHEMA_VERSION,
     items: isTodoItemArray(data.items) ? normalizeTodoItems(data.items) : defaults.items,
     labels: isLabelArray(data.labels) ? data.labels : defaults.labels,
     properties: isPropertyArray(data.properties) ? data.properties : defaults.properties,
-    settings: {
-      ...defaults.settings,
-      ...settings as Partial<AppSettings>,
-    },
+    settings: sanitizeSettings(defaults.settings, data.settings),
+  };
+}
+
+function sanitizeSettings(defaults: AppSettings, value: unknown): AppSettings {
+  const settings = isRecord(value) ? value : {};
+
+  return {
+    alwaysOnTop: typeof settings.alwaysOnTop === 'boolean' ? settings.alwaysOnTop : defaults.alwaysOnTop,
+    autostartEnabled: typeof settings.autostartEnabled === 'boolean' ? settings.autostartEnabled : defaults.autostartEnabled,
+    itemOrderMode: isItemOrderMode(settings.itemOrderMode) ? settings.itemOrderMode : defaults.itemOrderMode,
+    startupMode: isStartupMode(settings.startupMode) ? settings.startupMode : defaults.startupMode,
+    windowPosition: isWindowPosition(settings.windowPosition) ? settings.windowPosition : defaults.windowPosition,
+    theme: isTheme(settings.theme) ? settings.theme : defaults.theme,
   };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function isItemOrderMode(value: unknown): value is AppSettings['itemOrderMode'] {
+  return value === 'manual' || value === 'urgent-first' || value === 'important-first' || value === 'urgent-then-important';
+}
+
+function isStartupMode(value: unknown): value is AppSettings['startupMode'] {
+  return value === 'unfolded' || value === 'folded';
+}
+
+function isTheme(value: unknown): value is AppSettings['theme'] {
+  return value === 'auto' || value === 'light' || value === 'dark';
+}
+
+function isWindowPosition(value: unknown): value is AppSettings['windowPosition'] {
+  if (value === null) return true;
+  if (!isRecord(value)) return false;
+
+  return typeof value.x === 'number'
+    && typeof value.y === 'number'
+    && typeof value.width === 'number'
+    && typeof value.height === 'number';
 }
 
 function isTodoItemArray(value: unknown): value is TodoItem[] {

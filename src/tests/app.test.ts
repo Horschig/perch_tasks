@@ -43,20 +43,31 @@ const tauriPositionMocks = vi.hoisted(() => ({
 
 const stateMocks = vi.hoisted(() => ({
   actionAddItem: vi.fn(),
+  actionSetAutostartEnabled: vi.fn(),
+  actionSetItemOrderMode: vi.fn(),
+  actionSetStartupMode: vi.fn(),
   actionReorderItems: vi.fn(),
   actionSetAlwaysOnTop: vi.fn(),
   actionSetSearch: vi.fn(),
+  getAutostartEnabled: vi.fn(() => false),
   getFilteredItems: vi.fn(() => []),
+  getItemOrderMode: vi.fn(() => 'manual'),
   getLabels: vi.fn(() => []),
   getProperties: vi.fn(() => []),
   getSearchQuery: vi.fn(() => ''),
-  getState: vi.fn(() => ({ settings: { alwaysOnTop: true, itemOrderMode: 'manual' } })),
+  getStartupMode: vi.fn(() => 'unfolded'),
+  getState: vi.fn(() => ({ settings: { alwaysOnTop: true, autostartEnabled: false, itemOrderMode: 'manual', startupMode: 'unfolded' } })),
   initState: vi.fn(async () => undefined),
   isInitialized: vi.fn(() => true),
 }));
 
 const coreMocks = vi.hoisted(() => ({
   invoke: vi.fn(async () => false),
+}));
+
+const autostartMocks = vi.hoisted(() => ({
+  readAutostartEnabled: vi.fn(async () => false),
+  setAutostartEnabled: vi.fn(async () => undefined),
 }));
 
 vi.mock('@tauri-apps/api/window', () => ({
@@ -100,19 +111,30 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: coreMocks.invoke,
 }));
 
+vi.mock('../lib/autostart', () => ({
+  readAutostartEnabled: autostartMocks.readAutostartEnabled,
+  setAutostartEnabled: autostartMocks.setAutostartEnabled,
+}));
+
 vi.mock('../lib/tray', () => ({
   setupTray: vi.fn(async () => undefined),
 }));
 
 vi.mock('../lib/state.svelte', () => ({
   actionAddItem: stateMocks.actionAddItem,
+  actionSetAutostartEnabled: stateMocks.actionSetAutostartEnabled,
+  actionSetItemOrderMode: stateMocks.actionSetItemOrderMode,
   actionReorderItems: stateMocks.actionReorderItems,
   actionSetAlwaysOnTop: stateMocks.actionSetAlwaysOnTop,
   actionSetSearch: stateMocks.actionSetSearch,
+  actionSetStartupMode: stateMocks.actionSetStartupMode,
+  getAutostartEnabled: stateMocks.getAutostartEnabled,
   getFilteredItems: stateMocks.getFilteredItems,
+  getItemOrderMode: stateMocks.getItemOrderMode,
   getLabels: stateMocks.getLabels,
   getProperties: stateMocks.getProperties,
   getSearchQuery: stateMocks.getSearchQuery,
+  getStartupMode: stateMocks.getStartupMode,
   getState: stateMocks.getState,
   initState: stateMocks.initState,
   isInitialized: stateMocks.isInitialized,
@@ -129,6 +151,46 @@ describe('App', () => {
     });
 
     expect(coreMocks.invoke).toHaveBeenCalledWith('migrate_legacy_store');
+  });
+
+  it('syncs launch-at-login state from the native autostart plugin', async () => {
+    autostartMocks.readAutostartEnabled.mockResolvedValueOnce(true);
+    stateMocks.actionSetAutostartEnabled.mockClear();
+
+    render(App);
+
+    await waitFor(() => {
+      expect(stateMocks.actionSetAutostartEnabled).toHaveBeenCalledWith(true);
+    });
+  });
+
+  it('applies folded startup before the first show call when configured', async () => {
+    stateMocks.getState.mockReturnValueOnce({
+      settings: {
+        alwaysOnTop: true,
+        autostartEnabled: false,
+        itemOrderMode: 'manual',
+        startupMode: 'folded',
+      },
+    });
+    appWindowMocks.setMinSize.mockClear();
+    appWindowMocks.show.mockClear();
+
+    render(App);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Open todo list' })).toBeTruthy();
+    });
+
+    const minSizeCalls = appWindowMocks.setMinSize.mock.calls as Array<[unknown?]>;
+    const clearMinSizeCall = minSizeCalls.findIndex((call) => call[0] === undefined);
+    const showCallOrder = appWindowMocks.show.mock.invocationCallOrder.at(0);
+    const clearMinSizeOrder = clearMinSizeCall >= 0
+      ? appWindowMocks.setMinSize.mock.invocationCallOrder[clearMinSizeCall]
+      : undefined;
+
+    expect(clearMinSizeOrder).toBeTypeOf('number');
+    expect(clearMinSizeOrder).toBeLessThan(showCallOrder ?? Number.POSITIVE_INFINITY);
   });
 
   it('folds into the mid-right edge tab and temporarily removes the minimum size constraint', async () => {
@@ -250,6 +312,26 @@ describe('App', () => {
     });
 
     expect(stateMocks.actionSetSearch).toHaveBeenCalledWith('');
+  });
+
+  it('shows the startup mode control in settings', async () => {
+    render(App);
+
+    await fireEvent.click(await screen.findByRole('button', { name: 'Settings' }));
+
+    expect(await screen.findByLabelText('Startup mode')).toBeTruthy();
+  });
+
+  it('applies launch-at-login changes from settings through the autostart wrapper', async () => {
+    render(App);
+
+    await fireEvent.click(await screen.findByRole('button', { name: 'Settings' }));
+    await fireEvent.click(await screen.findByLabelText('Launch at login'));
+
+    await waitFor(() => {
+      expect(autostartMocks.setAutostartEnabled).toHaveBeenCalledWith(true);
+    });
+    expect(stateMocks.actionSetAutostartEnabled).toHaveBeenCalledWith(true);
   });
 
   it('submits a root todo from the default add composer and keeps it visible', async () => {

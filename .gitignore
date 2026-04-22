@@ -23,6 +23,8 @@ vite.config.ts.timestamp-*
 
 # Logs
 *.log
+playwright-report/
+test-results/
 
 # Data files
 *.xlsx
