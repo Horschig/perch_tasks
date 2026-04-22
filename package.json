@@ -10,14 +10,14 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
+    "test:browser": "playwright test",
     "test:watch": "vitest",
     "icons:generate": "powershell -ExecutionPolicy Bypass -File .\\scripts\\generate-icons.ps1",
     "release:apply-pr": "node ./scripts/bump-version-from-pr.mjs",
     "tauri": "tauri",
     "app:dev": "node ./scripts/tauri-cli.mjs dev",
     "app:build": "node ./scripts/tauri-cli.mjs build",
-    "app:start": "powershell -ExecutionPolicy Bypass -File .\\scripts\\start-release.ps1",
-    "test:browser": "playwright test"
+    "app:start": "powershell -ExecutionPolicy Bypass -File .\\scripts\\start-release.ps1"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
