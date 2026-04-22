@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.4 - 2026-04-22
+
+PR: #4 - fix: restore regressions and add startup controls
+
+This update restores the expanding search bar, fixes drag reordering after unfolding items, keeps Perch Tasks to a single running instance, and adds Settings controls for launch at login plus fixed folded or unfolded startup behavior.
+
+- Search in the toolbar expands again instead of staying cramped.
+- Drag handles stay available after child lists are unfolded.
+- Perch Tasks focuses the existing window instead of opening a second instance.
+- Settings now include launch-at-login and folded or unfolded startup behavior.
+- Added regression coverage for the toolbar search layout and drag-handle state so these UI issues are caught earlier.
+
 ## 0.2.3 - 2026-04-17
 
 PR: #3 - Fix automatic release dispatch after metadata bump
