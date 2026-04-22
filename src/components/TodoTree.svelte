@@ -98,6 +98,7 @@
       dragDisabled: !reorderEnabled,
       dropFromOthersDisabled: true,
       flipDurationMs: 0,
+      useCursorForDetection: true,
       delayTouchStart: true,
       zoneItemTabIndex: -1,
       zoneTabIndex: -1,
@@ -133,35 +134,33 @@
     const handleConsiderEvent = (event: Event) => handleReorderConsider(event as CustomEvent<{ items: unknown[]; info: unknown }>);
     const handleFinalizeEvent = (event: Event) => handleReorderFinalize(event as CustomEvent<{ items: unknown[]; info: unknown }>);
 
-    function attachZone(nextOptions: ReturnType<typeof getZoneOptions>) {
+    function startAction(nextOptions: ReturnType<typeof getZoneOptions>) {
       if (nextOptions.dragDisabled) {
-        action?.destroy?.();
-        action = undefined;
-        return;
+        return undefined;
       }
 
       try {
-        action = dragHandleZone(node, nextOptions);
+        return dragHandleZone(node, nextOptions);
       } catch {
-        action = undefined;
+        return undefined;
       }
     }
 
     node.addEventListener('consider', handleConsiderEvent);
     node.addEventListener('finalize', handleFinalizeEvent);
 
-    attachZone(options);
+    action = startAction(options);
 
     return {
       update(nextOptions: ReturnType<typeof getZoneOptions>) {
-        if (!action) {
-          attachZone(nextOptions);
+        if (nextOptions.dragDisabled) {
+          action?.destroy?.();
+          action = undefined;
           return;
         }
 
-        if (nextOptions.dragDisabled) {
-          action.destroy?.();
-          action = undefined;
+        if (!action) {
+          action = startAction(nextOptions);
           return;
         }
 

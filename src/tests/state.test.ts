@@ -97,18 +97,19 @@ describe('state ordering', () => {
     expect(stateModule.getItems().map((item) => item.id)).toEqual(['normal', 'urgent']);
   });
 
-  it('updates startup settings and persists them through the debounced save path', async () => {
+  it('persists the startup window mode setting', async () => {
     vi.useFakeTimers();
 
-    const { stateModule, store } = await loadStateModule(createDefaultState());
+    const initialState: AppState = createDefaultState();
+    const { stateModule, store } = await loadStateModule(initialState);
 
-    stateModule.actionSetStartupMode('folded');
-    stateModule.actionSetAutostartEnabled(true);
-    vi.runOnlyPendingTimers();
+    stateModule.actionSetStartupWindowMode('folded');
 
-    expect(stateModule.getState().settings.startupMode).toBe('folded');
-    expect(stateModule.getState().settings.autostartEnabled).toBe(true);
-    expect((store.getSavedState() as AppState | null)?.settings.startupMode).toBe('folded');
-    expect((store.getSavedState() as AppState | null)?.settings.autostartEnabled).toBe(true);
+    expect(stateModule.getState().settings.startupWindowMode).toBe('folded');
+
+    vi.runAllTimers();
+    await Promise.resolve();
+
+    expect((store.getSavedState() as AppState | null)?.settings.startupWindowMode).toBe('folded');
   });
 });

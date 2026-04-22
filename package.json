@@ -1,12 +1,12 @@
 {
   "name": "perch-tasks",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "ci:validate": "npm run test && npm run check && npm run build",
+    "ci:validate": "npm run test && npm run test:browser && npm run check && npm run build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",

@@ -44,13 +44,6 @@ function migrateState(data: Record<string, unknown>): AppState {
     };
   }
 
-  if (version < 5) {
-    state = {
-      ...state,
-      settings: sanitizeSettings(defaults.settings, state.settings),
-    };
-  }
-
   return { ...state, schemaVersion: SCHEMA_VERSION };
 }
 
@@ -83,12 +76,16 @@ function mergeState(defaults: AppState, data: Record<string, unknown>): AppState
 
 function sanitizeSettings(defaults: AppSettings, value: unknown): AppSettings {
   const settings = isRecord(value) ? value : {};
+  const startupWindowMode = isStartupWindowMode(settings.startupWindowMode)
+    ? settings.startupWindowMode
+    : isStartupWindowMode(settings.startupMode)
+      ? settings.startupMode
+      : defaults.startupWindowMode;
 
   return {
     alwaysOnTop: typeof settings.alwaysOnTop === 'boolean' ? settings.alwaysOnTop : defaults.alwaysOnTop,
-    autostartEnabled: typeof settings.autostartEnabled === 'boolean' ? settings.autostartEnabled : defaults.autostartEnabled,
     itemOrderMode: isItemOrderMode(settings.itemOrderMode) ? settings.itemOrderMode : defaults.itemOrderMode,
-    startupMode: isStartupMode(settings.startupMode) ? settings.startupMode : defaults.startupMode,
+    startupWindowMode,
     windowPosition: isWindowPosition(settings.windowPosition) ? settings.windowPosition : defaults.windowPosition,
     theme: isTheme(settings.theme) ? settings.theme : defaults.theme,
   };
@@ -102,7 +99,7 @@ function isItemOrderMode(value: unknown): value is AppSettings['itemOrderMode'] 
   return value === 'manual' || value === 'urgent-first' || value === 'important-first' || value === 'urgent-then-important';
 }
 
-function isStartupMode(value: unknown): value is AppSettings['startupMode'] {
+function isStartupWindowMode(value: unknown): value is AppSettings['startupWindowMode'] {
   return value === 'unfolded' || value === 'folded';
 }
 

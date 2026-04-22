@@ -478,16 +478,21 @@ describe('TodoItem interactions', () => {
     expect(treeProps.onReorderItems).toHaveBeenCalledWith(null, ['second', 'first']);
   });
 
-  it('keeps sibling drag handles enabled after an expanded child list mounts', () => {
+  it('keeps root drag handles enabled when an unfolded child list is mounted', () => {
     render(TodoTree, {
       items: [
         makeItem({
-          id: 'parent',
-          text: 'Parent item',
+          id: 'first',
+          text: 'First item',
           collapsed: false,
-          children: [makeItem({ id: 'child', text: 'Only child' })],
+          children: [makeItem({ id: 'first-child', text: 'First child' })],
         }),
-        makeItem({ id: 'sibling', text: 'Sibling item' }),
+        makeItem({
+          id: 'second',
+          text: 'Second item',
+          collapsed: false,
+          children: [makeItem({ id: 'second-child', text: 'Second child' })],
+        }),
       ],
       labels: [],
       properties: [],
@@ -497,9 +502,8 @@ describe('TodoItem interactions', () => {
       canReorder: true,
     });
 
-    const siblingDragHandle = screen.getByRole('button', { name: 'Drag item Sibling item' });
-
-    expect(siblingDragHandle.tabIndex).toBe(0);
+    expect(screen.getByRole('button', { name: 'Drag item First item' }).getAttribute('tabindex')).toBe('0');
+    expect(screen.getByRole('button', { name: 'Drag item Second item' }).getAttribute('tabindex')).toBe('0');
   });
 });
 

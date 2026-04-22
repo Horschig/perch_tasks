@@ -1,49 +1,76 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import {
-    actionSetStartupMode,
     actionSetItemOrderMode,
     getLabels,
     getItemOrderMode,
     getProperties,
-    getStartupMode,
     actionSetLabels,
     actionSetProperties,
+    actionSetStartupWindowMode,
+    getStartupWindowMode,
   } from '../lib/state.svelte';
-  import { ITEM_ORDER_MODES, STARTUP_MODES } from '../lib/constants';
+  import { ITEM_ORDER_MODES, STARTUP_WINDOW_MODES } from '../lib/constants';
+  import { getAutostartEnabled, setAutostartEnabled } from '../lib/autostart';
   import { generateId } from '../lib/uuid';
-  import type { ItemOrderMode, Label, Property, StartupMode } from '../lib/types';
+  import type { ItemOrderMode, Label, Property, StartupWindowMode } from '../lib/types';
 
   interface Props {
     onClose: () => void;
-    autostartEnabled?: boolean;
-    autostartPending?: boolean;
-    onSetAutostartEnabled?: (value: boolean) => void | Promise<void>;
   }
 
-  let {
-    onClose,
-    autostartEnabled = false,
-    autostartPending = false,
-    onSetAutostartEnabled = () => undefined,
-  }: Props = $props();
+  let { onClose }: Props = $props();
 
   let itemOrderMode = $state<ItemOrderMode>(getItemOrderMode());
-  let startupMode = $state<StartupMode>(getStartupMode());
+  let startupWindowMode = $state<StartupWindowMode>(getStartupWindowMode());
   let labels = $state<Label[]>(getLabels());
   let properties = $state<Property[]>(getProperties());
+  let autostartEnabled = $state(false);
+  let autostartPending = $state(true);
+  let autostartError = $state('');
 
-  function updateStartupMode(value: StartupMode) {
-    actionSetStartupMode(value);
-    startupMode = getStartupMode();
-  }
-
-  function handleAutostartChange(event: Event) {
-    void onSetAutostartEnabled((event.target as HTMLInputElement).checked);
-  }
+  onMount(() => {
+    void refreshAutostart();
+  });
 
   function updateItemOrderMode(value: ItemOrderMode) {
     actionSetItemOrderMode(value);
     itemOrderMode = getItemOrderMode();
+  }
+
+  function updateStartupWindowMode(value: StartupWindowMode) {
+    actionSetStartupWindowMode(value);
+    startupWindowMode = getStartupWindowMode();
+  }
+
+  async function refreshAutostart() {
+    autostartPending = true;
+    autostartError = '';
+
+    try {
+      autostartEnabled = await getAutostartEnabled();
+    } catch {
+      autostartError = 'Autostart status could not be loaded.';
+    } finally {
+      autostartPending = false;
+    }
+  }
+
+  async function handleAutostartChange(event: Event) {
+    const nextEnabled = (event.target as HTMLInputElement).checked;
+
+    autostartPending = true;
+    autostartError = '';
+
+    try {
+      await setAutostartEnabled(nextEnabled);
+      autostartEnabled = await getAutostartEnabled();
+    } catch {
+      autostartEnabled = !nextEnabled;
+      autostartError = 'Autostart could not be updated.';
+    } finally {
+      autostartPending = false;
+    }
   }
 
   // -- Label management --
@@ -120,39 +147,44 @@
 
     <div class="settings-body">
       <section class="section">
-        <h3>Launch</h3>
-        <p class="section-hint">Choose how the app should look when it opens.</p>
+        <h3>Window</h3>
+        <p class="section-hint">Choose how the app starts and whether it launches with your desktop session.</p>
 
-        <label class="toggle-row" for="autostart-enabled">
-          <span class="toggle-copy">
-            <span class="field-label field-label-inline">Launch at login</span>
-            <span class="section-note section-note-inline">Start Perch Tasks automatically when you sign in on Windows or Linux.</span>
-          </span>
-          <input
-            id="autostart-enabled"
-            class="toggle-input"
-            type="checkbox"
-            checked={autostartEnabled}
-            disabled={autostartPending}
-            aria-label="Launch at login"
-            onchange={handleAutostartChange}
-          />
-        </label>
-
-        <label class="field-label" for="startup-mode">Startup mode</label>
+        <label class="field-label" for="startup-window-mode">Startup window</label>
         <select
-          id="startup-mode"
+          id="startup-window-mode"
           class="order-mode-select"
-          bind:value={startupMode}
-          aria-label="Startup mode"
-          onchange={(event) => updateStartupMode((event.target as HTMLSelectElement).value as StartupMode)}
+          bind:value={startupWindowMode}
+          onchange={(event) => updateStartupWindowMode((event.target as HTMLSelectElement).value as StartupWindowMode)}
         >
-          {#each STARTUP_MODES as mode}
+          {#each STARTUP_WINDOW_MODES as mode}
             <option value={mode.value}>{mode.label}</option>
           {/each}
         </select>
 
-        <p class="section-note">Folded starts as the edge tab. Unfolded opens the full window.</p>
+        <label class="toggle-row" for="launch-at-login">
+          <span class="toggle-copy">
+            <span class="toggle-title">Launch at login</span>
+            <span class="section-note">Registers Perch Tasks to start with Windows or Linux.</span>
+          </span>
+          <input
+            id="launch-at-login"
+            class="toggle-input"
+            type="checkbox"
+            checked={autostartEnabled}
+            disabled={autostartPending}
+            onchange={handleAutostartChange}
+            aria-label="Launch at login"
+          />
+        </label>
+
+        {#if autostartPending}
+          <p class="section-note">Checking launch-at-login status...</p>
+        {/if}
+
+        {#if autostartError}
+          <p class="field-error">{autostartError}</p>
+        {/if}
       </section>
 
       <section class="section">
@@ -345,34 +377,6 @@
     margin-bottom: var(--space-xs);
   }
 
-  .field-label-inline {
-    margin-bottom: 0;
-  }
-
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-md);
-    padding: var(--space-sm);
-    margin-bottom: var(--space-md);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: var(--color-surface-elevated);
-  }
-
-  .toggle-copy {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .toggle-input {
-    width: 16px;
-    height: 16px;
-    flex-shrink: 0;
-  }
-
   .order-mode-select {
     width: 100%;
     border: 1px solid var(--color-border);
@@ -389,8 +393,37 @@
     color: var(--color-text-tertiary);
   }
 
-  .section-note-inline {
-    margin-top: 0;
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+  }
+
+  .toggle-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .toggle-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text-secondary);
+  }
+
+  .toggle-input {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .field-error {
+    margin-top: var(--space-xs);
+    font-size: 11px;
+    color: #b91c1c;
   }
 
   .item-list {

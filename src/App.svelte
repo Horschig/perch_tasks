@@ -14,12 +14,10 @@
   import TodoTree from './components/TodoTree.svelte';
   import Settings from './components/Settings.svelte';
   import ContextMenu from './components/ContextMenu.svelte';
-  import { readAutostartEnabled, setAutostartEnabled as updateAutostartEnabled } from './lib/autostart';
   import type { DockEdge, Rect } from './lib/foldout';
   import { getCenteredFoldedRectForEdge, restoreExpandedRect, snapFoldedRect } from './lib/foldout';
   import {
     initState,
-    getAutostartEnabled,
     getState,
     getFilteredItems,
     getLabels,
@@ -27,10 +25,10 @@
     isInitialized,
     actionAddItem,
     actionReorderItems,
-    actionSetAutostartEnabled,
     actionSetAlwaysOnTop,
     actionSetSearch,
     getSearchQuery,
+    getStartupWindowMode,
   } from './lib/state.svelte';
 
   type ResizeDirection = 'East' | 'North' | 'NorthEast' | 'NorthWest' | 'South' | 'SouthEast' | 'SouthWest' | 'West';
@@ -55,7 +53,6 @@
   let foldedEdge = $state<DockEdge>('right');
   let foldedBounds = $state<Rect | null>(null);
   let expandedBounds = $state<Rect | null>(null);
-  let autostartPending = $state(false);
 
   let foldPointerId: number | null = null;
   let foldPointerOrigin = { x: 0, y: 0 };
@@ -75,52 +72,23 @@
     });
 
     const appWindow = getCurrentWindow();
-    const { settings } = getState();
+    await appWindow.setAlwaysOnTop(getState().settings.alwaysOnTop);
 
-    await appWindow.setAlwaysOnTop(settings.alwaysOnTop);
-    void syncAutostartPreference();
+    if (getStartupWindowMode() === 'folded') {
+      const currentRect = await readWindowRect();
+      const didFold = await applyFoldedWindowState(currentRect);
 
-    if (settings.startupMode === 'folded') {
-      await handleFoldWindow();
-      await revealMainWindow(appWindow);
-      return;
+      if (!didFold) {
+        await appWindow.setMinSize(new PhysicalSize(DEFAULT_MIN_WINDOW_SIZE.width, DEFAULT_MIN_WINDOW_SIZE.height));
+      }
+    } else {
+      await appWindow.setMinSize(new PhysicalSize(DEFAULT_MIN_WINDOW_SIZE.width, DEFAULT_MIN_WINDOW_SIZE.height));
     }
 
-    await appWindow.setMinSize(new PhysicalSize(DEFAULT_MIN_WINDOW_SIZE.width, DEFAULT_MIN_WINDOW_SIZE.height));
-    await revealMainWindow(appWindow);
-  });
-
-  async function revealMainWindow(appWindow = getCurrentWindow()) {
     await appWindow.show();
     await appWindow.unminimize();
     await appWindow.setFocus();
-  }
-
-  async function syncAutostartPreference() {
-    try {
-      const enabled = await readAutostartEnabled();
-      if (enabled !== getAutostartEnabled()) {
-        actionSetAutostartEnabled(enabled);
-      }
-    } catch (error) {
-      console.warn('[autostart] failed to read startup registration', error);
-    }
-  }
-
-  async function handleSetAutostartEnabled(value: boolean) {
-    if (autostartPending) return;
-
-    autostartPending = true;
-
-    try {
-      await updateAutostartEnabled(value);
-      actionSetAutostartEnabled(value);
-    } catch (error) {
-      console.warn('[autostart] failed to update startup registration', error);
-    } finally {
-      autostartPending = false;
-    }
-  }
+  });
 
   function clearInlineUi() {
     hoveredAddTargetId = null;
@@ -296,18 +264,11 @@
     await handleFoldWindow();
   }
 
-  async function handleFoldWindow() {
-    clearInlineUi();
-    contextMenu = null;
-    showSettings = false;
-    closeSearch({ restoreAdd: false });
-    closeRootAddComposer();
-
+  async function applyFoldedWindowState(currentRect: Rect): Promise<boolean> {
     const appWindow = getCurrentWindow();
-    const currentRect = await readWindowRect();
     const monitor = await getMonitorForRect(currentRect);
 
-    if (!monitor) return;
+    if (!monitor) return false;
 
     const snapped = {
       edge: 'right' as const,
@@ -322,6 +283,18 @@
     foldedEdge = snapped.edge;
     foldedBounds = snapped.rect;
     isFolded = true;
+    return true;
+  }
+
+  async function handleFoldWindow() {
+    clearInlineUi();
+    contextMenu = null;
+    showSettings = false;
+    closeSearch({ restoreAdd: false });
+    closeRootAddComposer();
+
+    const currentRect = await readWindowRect();
+    await applyFoldedWindowState(currentRect);
   }
 
   async function handleUnfoldWindow() {
@@ -600,12 +573,7 @@
     />
 
     {#if showSettings}
-      <Settings
-        onClose={() => { showSettings = false; }}
-        autostartEnabled={getAutostartEnabled()}
-        {autostartPending}
-        onSetAutostartEnabled={handleSetAutostartEnabled}
-      />
+      <Settings onClose={() => { showSettings = false; }} />
     {/if}
 
     {#if contextMenu}

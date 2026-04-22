@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/svelte';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { describe, expect, it, vi } from 'vitest';
 import Settings from '../components/Settings.svelte';
 
@@ -6,39 +6,68 @@ const stateMocks = vi.hoisted(() => ({
   actionSetItemOrderMode: vi.fn(),
   actionSetLabels: vi.fn(),
   actionSetProperties: vi.fn(),
-  actionSetStartupMode: vi.fn(),
+  actionSetStartupWindowMode: vi.fn(),
   getItemOrderMode: vi.fn(() => 'manual'),
   getLabels: vi.fn(() => []),
   getProperties: vi.fn(() => []),
-  getStartupMode: vi.fn(() => 'unfolded'),
+  getStartupWindowMode: vi.fn(() => 'unfolded'),
+}));
+
+const autostartMocks = vi.hoisted(() => ({
+  getAutostartEnabled: vi.fn(async () => false),
+  setAutostartEnabled: vi.fn(async () => undefined),
 }));
 
 vi.mock('../lib/state.svelte', () => ({
   actionSetItemOrderMode: stateMocks.actionSetItemOrderMode,
   actionSetLabels: stateMocks.actionSetLabels,
   actionSetProperties: stateMocks.actionSetProperties,
-  actionSetStartupMode: stateMocks.actionSetStartupMode,
+  actionSetStartupWindowMode: stateMocks.actionSetStartupWindowMode,
   getItemOrderMode: stateMocks.getItemOrderMode,
   getLabels: stateMocks.getLabels,
   getProperties: stateMocks.getProperties,
-  getStartupMode: stateMocks.getStartupMode,
+  getStartupWindowMode: stateMocks.getStartupWindowMode,
+}));
+
+vi.mock('../lib/autostart', () => ({
+  getAutostartEnabled: autostartMocks.getAutostartEnabled,
+  setAutostartEnabled: autostartMocks.setAutostartEnabled,
 }));
 
 describe('Settings', () => {
-  it('renders launch controls and forwards launch preference changes', async () => {
-    const onSetAutostartEnabled = vi.fn();
+  it('shows startup window mode and launch-at-login controls', async () => {
+    render(Settings, { onClose: vi.fn() });
 
-    render(Settings, {
-      onClose: vi.fn(),
-      autostartEnabled: false,
-      autostartPending: false,
-      onSetAutostartEnabled,
+    await waitFor(() => {
+      expect(autostartMocks.getAutostartEnabled).toHaveBeenCalled();
     });
 
-    await fireEvent.click(screen.getByLabelText('Launch at login'));
-    await fireEvent.change(screen.getByLabelText('Startup mode'), { target: { value: 'folded' } });
+    expect(screen.getByLabelText('Startup window')).toBeTruthy();
+    expect(screen.getByLabelText('Launch at login')).toBeTruthy();
+  });
 
-    expect(onSetAutostartEnabled).toHaveBeenCalledWith(true);
-    expect(stateMocks.actionSetStartupMode).toHaveBeenCalledWith('folded');
+  it('updates the startup window mode setting from the select control', async () => {
+    render(Settings, { onClose: vi.fn() });
+
+    await fireEvent.change(screen.getByLabelText('Startup window'), {
+      target: { value: 'folded' },
+    });
+
+    expect(stateMocks.actionSetStartupWindowMode).toHaveBeenCalledWith('folded');
+  });
+
+  it('updates launch-at-login through the autostart wrapper', async () => {
+    autostartMocks.getAutostartEnabled.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
+
+    render(Settings, { onClose: vi.fn() });
+
+    const checkbox = await screen.findByLabelText('Launch at login');
+    await fireEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(autostartMocks.setAutostartEnabled).toHaveBeenCalledWith(true);
+    });
+
+    expect((checkbox as HTMLInputElement).checked).toBe(true);
   });
 });

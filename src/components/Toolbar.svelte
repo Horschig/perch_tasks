@@ -243,8 +243,8 @@
   }
 
   .search-composer {
-    min-width: clamp(220px, 42vw, 360px);
-    max-width: clamp(220px, 42vw, 360px);
+    min-width: min(220px, calc(100vw - 96px));
+    max-width: min(288px, calc(100vw - 96px));
   }
 
   .mode-input {

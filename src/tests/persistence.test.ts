@@ -21,6 +21,7 @@ describe('loadState', () => {
     expect(state.labels).toHaveLength(4);
     expect(state.properties).toHaveLength(2);
     expect(state.settings.itemOrderMode).toBe('manual');
+    expect(state.settings.startupWindowMode).toBe('unfolded');
   });
 
   it('returns stored state when present', async () => {
@@ -38,6 +39,7 @@ describe('loadState', () => {
     const state = await loadState(store);
     expect(state.schemaVersion).toBe(SCHEMA_VERSION);
     expect(state.settings.itemOrderMode).toBe('manual');
+    expect(state.settings.startupWindowMode).toBe('unfolded');
   });
 
   it('fills missing settings fields when loading an older saved state', async () => {
@@ -57,25 +59,7 @@ describe('loadState', () => {
     expect(state.settings.alwaysOnTop).toBe(false);
     expect(state.settings.theme).toBe('dark');
     expect(state.settings.itemOrderMode).toBe('manual');
-    expect(state.settings.autostartEnabled).toBe(false);
-    expect(state.settings.startupMode).toBe('unfolded');
-  });
-
-  it('falls back to safe startup defaults when persisted startup settings are invalid', async () => {
-    const saved = {
-      ...createDefaultState(),
-      settings: {
-        ...createDefaultState().settings,
-        autostartEnabled: 'yes please',
-        startupMode: 'sideways',
-      },
-    };
-    const store = createMockStore({ appState: saved });
-
-    const state = await loadState(store);
-
-    expect(state.settings.autostartEnabled).toBe(false);
-    expect(state.settings.startupMode).toBe('unfolded');
+    expect(state.settings.startupWindowMode).toBe('unfolded');
   });
 
   it('adds default note metadata when loading items saved before note visibility existed', async () => {
