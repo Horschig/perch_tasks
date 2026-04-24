@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { openUrl } from '@tauri-apps/plugin-opener';
   import {
     actionSetItemOrderMode,
     getLabels,
@@ -11,6 +12,7 @@
     getStartupWindowMode,
   } from '../lib/state.svelte';
   import { ITEM_ORDER_MODES, STARTUP_WINDOW_MODES } from '../lib/constants';
+  import { APP_VERSION, GITHUB_REPOSITORY_URL } from '../lib/appInfo';
   import { getAutostartEnabled, setAutostartEnabled } from '../lib/autostart';
   import { generateId } from '../lib/uuid';
   import type { ItemOrderMode, Label, Property, StartupWindowMode } from '../lib/types';
@@ -132,6 +134,10 @@
 
   function saveProperties() {
     actionSetProperties(properties);
+  }
+
+  async function handleOpenRepository() {
+    await openUrl(GITHUB_REPOSITORY_URL);
   }
 </script>
 
@@ -287,6 +293,30 @@
 
         <button class="add-btn" onclick={addProperty}>+ Add property</button>
       </section>
+
+      <section class="section section-about">
+        <h3>About</h3>
+
+        <dl class="meta-list">
+          <div class="meta-row">
+            <dt class="meta-label">Version</dt>
+            <dd class="meta-value">{APP_VERSION}</dd>
+          </div>
+          <div class="meta-row">
+            <dt class="meta-label">GitHub</dt>
+            <dd class="meta-value">
+              <button
+                class="repo-link"
+                type="button"
+                onclick={handleOpenRepository}
+                aria-label="Open GitHub repository"
+              >
+                {GITHUB_REPOSITORY_URL}
+              </button>
+            </dd>
+          </div>
+        </dl>
+      </section>
     </div>
   </div>
 </div>
@@ -351,6 +381,10 @@
 
   .section {
     margin-bottom: var(--space-xl);
+  }
+
+  .section-about {
+    margin-bottom: 0;
   }
 
   .section h3 {
@@ -430,6 +464,46 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
+  }
+
+  .meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    border-radius: var(--radius-card);
+    background: var(--color-bg-hover);
+  }
+
+  .meta-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .meta-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-text-secondary);
+  }
+
+  .meta-value {
+    font-size: 12px;
+    color: var(--color-text-primary);
+    word-break: break-word;
+  }
+
+  .repo-link {
+    color: inherit;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: var(--color-border);
+    text-underline-offset: 2px;
+  }
+
+  .repo-link:hover {
+    color: var(--color-text-secondary);
   }
 
   .setting-item {
