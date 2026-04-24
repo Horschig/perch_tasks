@@ -52,6 +52,7 @@
 
 # Engineering Expectations
 
+- Default git workflow: keep local `main` aligned with `origin/main`, do work on a feature branch, push that feature branch, and open a pull request. Do not commit directly to or push directly to `main` unless explicitly instructed.
 - Prefer focused edits that preserve the current Tauri/Svelte architecture.
 - Keep business logic in small modules under src/lib/ instead of bloating App.svelte.
 - Update tests when behavior changes.
