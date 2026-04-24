@@ -419,15 +419,15 @@
       <div class="item-card">
         <div class="item-row" class:has-property-bg={propertyBackground} style:--property-bg={propertyBackground || 'none'}>
           {#if reorderEnabled}
-            <button
-              type="button"
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <span
               class="drag-handle-btn"
               use:safeDragHandle={reorderEnabled}
               onclick={handleDragHandleClick}
               aria-label={`Drag item ${item.text}`}
             >
               <span>⋮⋮</span>
-            </button>
+            </span>
           {/if}
 
           <button

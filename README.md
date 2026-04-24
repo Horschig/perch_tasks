@@ -61,6 +61,12 @@ If you are opening the repository itself, you can run or build the app with Node
   npm ci
   ```
 
+  For the browser regression tests, install Chromium once:
+
+  ```text
+  npx playwright install chromium
+  ```
+
   4. Start the desktop app in development mode:
 
   ```text

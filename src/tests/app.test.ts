@@ -50,7 +50,8 @@ const stateMocks = vi.hoisted(() => ({
   getLabels: vi.fn(() => []),
   getProperties: vi.fn(() => []),
   getSearchQuery: vi.fn(() => ''),
-  getState: vi.fn(() => ({ settings: { alwaysOnTop: true, itemOrderMode: 'manual' } })),
+  getStartupWindowMode: vi.fn(() => 'unfolded'),
+  getState: vi.fn(() => ({ settings: { alwaysOnTop: true, itemOrderMode: 'manual', startupWindowMode: 'unfolded' } })),
   initState: vi.fn(async () => undefined),
   isInitialized: vi.fn(() => true),
 }));
@@ -113,6 +114,7 @@ vi.mock('../lib/state.svelte', () => ({
   getLabels: stateMocks.getLabels,
   getProperties: stateMocks.getProperties,
   getSearchQuery: stateMocks.getSearchQuery,
+  getStartupWindowMode: stateMocks.getStartupWindowMode,
   getState: stateMocks.getState,
   initState: stateMocks.initState,
   isInitialized: stateMocks.isInitialized,
@@ -129,6 +131,33 @@ describe('App', () => {
     });
 
     expect(coreMocks.invoke).toHaveBeenCalledWith('migrate_legacy_store');
+  });
+
+  it('applies the folded startup mode before showing the window', async () => {
+    stateMocks.getStartupWindowMode.mockReturnValue('folded');
+    appWindowMocks.setMinSize.mockClear();
+    appWindowMocks.setResizable.mockClear();
+    appWindowMocks.setSize.mockClear();
+    appWindowMocks.show.mockClear();
+
+    render(App);
+
+    await waitFor(() => {
+      expect(appWindowMocks.setResizable).toHaveBeenCalledWith(false);
+    });
+
+    const minSizeCalls = appWindowMocks.setMinSize.mock.calls as unknown[][];
+    expect(minSizeCalls.at(0)?.[0]).toBeUndefined();
+
+    const showOrder = appWindowMocks.show.mock.invocationCallOrder[0] ?? Infinity;
+    const resizeOrder = appWindowMocks.setResizable.mock.invocationCallOrder[0] ?? -Infinity;
+    expect(resizeOrder).toBeLessThan(showOrder);
+
+    const setSizeCalls = appWindowMocks.setSize.mock.calls as unknown[][];
+    const foldedSize = setSizeCalls.at(-1)?.[0] as { width: number; height: number } | undefined;
+    expect(foldedSize).toMatchObject({ width: 52, height: 140 });
+
+    stateMocks.getStartupWindowMode.mockReturnValue('unfolded');
   });
 
   it('folds into the mid-right edge tab and temporarily removes the minimum size constraint', async () => {

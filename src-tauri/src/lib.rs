@@ -6,6 +6,7 @@ use tauri::{
     AppHandle, Manager,
 };
 use tauri::webview::Color;
+use tauri_plugin_autostart::MacosLauncher;
 
 const TRAY_ICON: tauri::image::Image<'_> = tauri::include_image!("./icons/32x32.png");
 
@@ -51,17 +52,21 @@ fn migrate_legacy_store(app: AppHandle) -> Result<bool, String> {
     Ok(true)
 }
 
+fn reveal_main_window<R: tauri::Runtime>(app: &AppHandle<R>) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
 fn toggle_main_window<R: tauri::Runtime>(app: &AppHandle<R>) {
     if let Some(window) = app.get_webview_window("main") {
         match window.is_visible() {
             Ok(true) => {
                 let _ = window.hide();
             }
-            Ok(false) => {
-                let _ = window.show();
-                let _ = window.unminimize();
-                let _ = window.set_focus();
-            }
+            Ok(false) => reveal_main_window(app),
             Err(error) => {
                 eprintln!("[tray] failed to query window visibility: {error}");
             }
@@ -98,6 +103,10 @@ fn setup_tray<R: tauri::Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            reveal_main_window(app);
+        }))
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![migrate_legacy_store])
