@@ -187,19 +187,19 @@ jobs:
           ref: ${{ needs.prepare-release.outputs.release_sha }}
 
       - name: Download Windows artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: release-windows-${{ needs.prepare-release.outputs.version }}
           path: release-assets/windows
 
       - name: Download Linux artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: release-linux-${{ needs.prepare-release.outputs.version }}
           path: release-assets/linux
 
       - name: Download release notes artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: release-notes-${{ needs.prepare-release.outputs.version }}
           path: release-assets/notes
@@ -227,7 +227,7 @@ jobs:
           git push origin "$TAG_NAME"
 
       - name: Publish GitHub release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.prepare-release.outputs.tag_name }}
           name: Perch Tasks ${{ needs.prepare-release.outputs.tag_name }}
