@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.6 - 2026-04-24
+
+PR: #6 - enh - add settings about metadata and document PR workflow
+
+## Summary
+- add a small About section in Settings that shows the current app version
+- add a clickable GitHub repository link in Settings
+- document the default feature-branch and pull-request workflow in Copilot instructions
+- keep the search regression coverage on the feature branch instead of pushing directly to main
+
+## Testing
+- npx vitest run src/tests/settings.test.ts
+- npm run ci:validate
+
 ## 0.2.5 - 2026-04-22
 
 PR: #5 - enh: add startup controls and fix regressions
