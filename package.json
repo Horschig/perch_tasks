@@ -2,6 +2,11 @@
   "name": "perch-tasks",
   "private": true,
   "version": "0.2.5",
+  "homepage": "https://github.com/Horschig/perch_tasks",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Horschig/perch_tasks.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -22,6 +27,7 @@
   "dependencies": {
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-autostart": "^2.5.1",
+    "@tauri-apps/plugin-opener": "^2.5.3",
     "@tauri-apps/plugin-store": "^2",
     "@tauri-apps/plugin-window-state": "^2"
   },
